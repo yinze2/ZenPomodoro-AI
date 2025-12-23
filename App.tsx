@@ -18,29 +18,49 @@ interface Task {
   completed: boolean;
 }
 
-// --- Constants ---
-const MODE_DATA = {
-  [TimerMode.FOCUS]: { label: 'Focus', color: 'rose', time: 25 },
-  [TimerMode.SHORT_BREAK]: { label: 'Short Break', color: 'emerald', time: 5 },
-  [TimerMode.LONG_BREAK]: { label: 'Long Break', color: 'sky', time: 15 }
+// --- Style Mappings (Ensuring Tailwind picks up these classes) ---
+const THEME_STYLES = {
+  [TimerMode.FOCUS]: {
+    label: 'Focus',
+    bgClass: 'bg-rose-500',
+    textClass: 'text-rose-500',
+    glowClass: 'bg-rose-500',
+    lightBg: 'bg-rose-500/20',
+    borderClass: 'border-rose-500/30'
+  },
+  [TimerMode.SHORT_BREAK]: {
+    label: 'Short Break',
+    bgClass: 'bg-emerald-500',
+    textClass: 'text-emerald-500',
+    glowClass: 'bg-emerald-500',
+    lightBg: 'bg-emerald-500/20',
+    borderClass: 'border-emerald-500/30'
+  },
+  [TimerMode.LONG_BREAK]: {
+    label: 'Long Break',
+    bgClass: 'bg-sky-500',
+    textClass: 'text-sky-500',
+    glowClass: 'bg-sky-500',
+    lightBg: 'bg-sky-500/20',
+    borderClass: 'border-sky-500/30'
+  }
 };
 
 const App: React.FC = () => {
   // --- State ---
   const [mode, setMode] = useState<TimerMode>(TimerMode.FOCUS);
   const [isActive, setIsActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(MODE_DATA[TimerMode.FOCUS].time * 60);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
-  // Settings
   const [durations, setDurations] = useState({
     [TimerMode.FOCUS]: 25,
     [TimerMode.SHORT_BREAK]: 5,
     [TimerMode.LONG_BREAK]: 15
   });
 
+  const [timeLeft, setTimeLeft] = useState(durations[TimerMode.FOCUS] * 60);
   const timerRef = useRef<number | null>(null);
 
   // --- Timer Logic ---
@@ -60,7 +80,9 @@ const App: React.FC = () => {
       }, 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
-      alert(`${MODE_DATA[mode].label} session complete!`);
+      const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+      audio.play().catch(() => {}); // Play sound if allowed
+      alert(`${THEME_STYLES[mode].label} finished!`);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -91,71 +113,67 @@ const App: React.FC = () => {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
-  // --- Styles ---
-  const themeColor = MODE_DATA[mode].color;
+  const currentStyle = THEME_STYLES[mode];
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans selection:bg-rose-500/30 p-4 md:p-8">
+    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans p-4 md:p-8 flex flex-col items-center">
       {/* Background Glow */}
-      <div className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-colors duration-1000 ${
-        themeColor === 'rose' ? 'bg-rose-500' : themeColor === 'emerald' ? 'bg-emerald-500' : 'bg-sky-500'
-      }`} />
+      <div className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-colors duration-1000 ${currentStyle.glowClass}`} />
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="w-full max-w-4xl relative z-10">
         {/* Header */}
         <header className="flex justify-between items-center mb-12">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg bg-${themeColor}-500 text-white`}>
+            <div className={`p-2 rounded-lg ${currentStyle.bgClass} text-white transition-colors duration-500`}>
               <Clock size={20} />
             </div>
             <h1 className="text-xl font-bold tracking-tight">ZenPomodoro</h1>
           </div>
           <button 
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+            className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400"
           >
-            <SettingsIcon size={20} className="text-slate-400" />
+            <SettingsIcon size={20} />
           </button>
         </header>
 
         <main className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Timer Section */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
-            <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-8 md:p-12 text-center">
-              {/* Mode Switcher */}
+          <div className="lg:col-span-3">
+            <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-8 md:p-12 text-center backdrop-blur-sm">
               <div className="flex justify-center gap-2 mb-12">
-                {(Object.keys(TimerMode) as Array<keyof typeof TimerMode>).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(TimerMode[m])}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-                      mode === TimerMode[m] 
-                        ? `bg-${themeColor}-500/20 text-${themeColor}-500 border border-${themeColor}-500/30` 
-                        : 'text-slate-500 hover:text-slate-300'
-                    }`}
-                  >
-                    {MODE_DATA[TimerMode[m]].label}
-                  </button>
-                ))}
+                {(Object.keys(TimerMode) as Array<keyof typeof TimerMode>).map((m) => {
+                  const modeKey = TimerMode[m];
+                  const style = THEME_STYLES[modeKey];
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => setMode(modeKey)}
+                      className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                        mode === modeKey 
+                          ? `${style.lightBg} ${style.textClass} border ${style.borderClass}` 
+                          : 'text-slate-500 hover:text-slate-300'
+                      }`}
+                    >
+                      {style.label}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Time Display */}
               <div className="mb-12">
                 <div className="text-8xl md:text-9xl font-bold mono tracking-tighter tabular-nums">
                   {formatTime(timeLeft)}
                 </div>
               </div>
 
-              {/* Controls */}
               <div className="flex items-center justify-center gap-6">
                 <button onClick={resetTimer} className="p-3 text-slate-500 hover:text-white transition-colors">
                   <RotateCcw size={24} />
                 </button>
                 <button
                   onClick={toggleTimer}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-95 ${
-                    themeColor === 'rose' ? 'bg-rose-500' : themeColor === 'emerald' ? 'bg-emerald-500' : 'bg-sky-500'
-                  } text-white ring-8 ring-white/5`}
+                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-95 ${currentStyle.bgClass} text-white ring-8 ring-white/5`}
                 >
                   {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
                 </button>
@@ -167,8 +185,8 @@ const App: React.FC = () => {
           </div>
 
           {/* Task Section */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 flex flex-col h-[400px]">
+          <div className="lg:col-span-2">
+            <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 flex flex-col h-[400px] backdrop-blur-sm">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-bold flex items-center gap-2 text-slate-300">
                   <Target size={18} className="text-rose-500" /> Tasks
@@ -178,10 +196,10 @@ const App: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-1 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
                 {tasks.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-slate-600 italic text-sm">
-                    No tasks yet. Add one below.
+                    No tasks yet.
                   </div>
                 ) : (
                   tasks.map(task => (
@@ -216,7 +234,7 @@ const App: React.FC = () => {
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all"
                 />
-                <button type="submit" className="absolute right-2 top-2 p-1.5 bg-rose-500 rounded-lg text-white hover:bg-rose-600 transition-colors">
+                <button type="submit" className="absolute right-2 top-2 p-1.5 bg-rose-500 rounded-lg text-white hover:bg-rose-600">
                   <Plus size={18} />
                 </button>
               </form>
@@ -225,25 +243,27 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      {/* Simplified Settings Modal */}
+      {/* Settings Modal */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)} />
           <div className="bg-[#1e293b] border border-white/10 w-full max-w-sm rounded-3xl p-6 relative shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-lg">Timer Settings</h3>
-              <button onClick={() => setIsSettingsOpen(false)}><X size={20}/></button>
+              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-500 hover:text-white"><X size={20}/></button>
             </div>
             
             <div className="space-y-6">
               {(Object.keys(TimerMode) as Array<keyof typeof TimerMode>).map((m) => (
                 <div key={m} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">{MODE_DATA[TimerMode[m]].label} (min)</span>
+                  <span className="text-sm text-slate-400">{THEME_STYLES[TimerMode[m]].label} (min)</span>
                   <input
                     type="number"
+                    min="1"
+                    max="60"
                     value={durations[TimerMode[m]]}
-                    onChange={(e) => setDurations({ ...durations, [TimerMode[m]]: parseInt(e.target.value) || 1 })}
-                    className="w-16 bg-white/5 border border-white/10 rounded-lg py-1 px-2 text-center mono text-sm"
+                    onChange={(e) => setDurations({ ...durations, [TimerMode[m]]: Math.max(1, parseInt(e.target.value) || 1) })}
+                    className="w-16 bg-white/5 border border-white/10 rounded-lg py-1 px-2 text-center mono text-sm focus:ring-1 focus:ring-rose-500 outline-none"
                   />
                 </div>
               ))}
@@ -258,9 +278,6 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Essential TailWind classes for dynamic colors */}
-      <div className="hidden bg-rose-500 bg-emerald-500 bg-sky-500 text-rose-500 text-emerald-500 text-sky-500 border-rose-500/30 border-emerald-500/30 border-sky-500/30 bg-rose-500/20 bg-emerald-500/20 bg-sky-500/20" />
     </div>
   );
 };
