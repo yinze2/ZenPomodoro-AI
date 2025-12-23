@@ -32,5 +32,7 @@
 </head>
 <body class="bg-[#0f172a] text-slate-100">
   <div id="root"></div>
+  <!-- 添加显式入口脚本，修复 Vite 构建无法识别模块的问题 -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
