@@ -1,0 +1,7 @@
+{
+  "name": "ZenPomodoro AI",
+  "description": "A high-performance, aesthetic Pomodoro timer featuring an AI Focus Coach powered by Gemini to provide personalized motivation and task optimization.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
