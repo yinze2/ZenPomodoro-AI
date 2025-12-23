@@ -22,7 +22,7 @@
 </head>
 <body class="bg-[#0f172a] text-slate-100">
   <div id="root"></div>
-  <!-- Vite 入口脚本：在构建时，Vite 会将此路径替换为打包后的 .js 文件 -->
+  <!-- Vite 必须以此为入口进行递归打包，不要在 HTML 中包含任何外部模块映射 -->
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
