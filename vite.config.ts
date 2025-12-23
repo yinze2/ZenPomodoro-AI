@@ -8,7 +8,7 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     minify: 'esbuild',
-    target: 'esnext'
+    target: 'modules' // 改回标准模块目标
   },
   server: {
     port: 3000,
