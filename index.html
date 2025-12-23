@@ -22,7 +22,7 @@
 </head>
 <body class="bg-[#0f172a] text-slate-100">
   <div id="root"></div>
-  <!-- 指向项目根目录下的入口文件，Vite 构建时会以此为起点进行打包 -->
-  <script type="module" src="/index.tsx"></script>
+  <!-- 使用 ./index.tsx 确保 Vite 能正确追踪并打包所有依赖 -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
