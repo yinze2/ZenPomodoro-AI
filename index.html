@@ -22,7 +22,7 @@
 </head>
 <body class="bg-[#0f172a] text-slate-100">
   <div id="root"></div>
-  <!-- Vite 必须以此为入口进行递归打包，不要在 HTML 中包含任何外部模块映射 -->
-  <script type="module" src="/index.tsx"></script>
+  <!-- Vite 入口：必须移除 importmap，Vite 才会递归打包 index.tsx 及其引用的所有组件 -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
